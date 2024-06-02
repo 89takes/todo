@@ -1,5 +1,6 @@
 const express = require('express');
-const { createTodo } = require('./types');
+const { createTodo, updateTodo } = require('./types');
+const { todo } = require('./db')
 
 const app = express()
 app.use(express.json());
@@ -40,7 +41,7 @@ app.get('/todos', async function(req, res) {
 
 app.put('/completed', async function(req, res) {
     const updatePayload = req.body;
-    const parsedPayload = updatePayload.safeParse(updatePayload);
+    const parsedPayload = updateTodo.safeParse(updatePayload);
     if(!parsedPayload.success) {
         res.status(411).json({
             msg: "Wrong inputs"
@@ -49,12 +50,15 @@ app.put('/completed', async function(req, res) {
     }
 
     // update in mongo 
-    await todo.update(
+    await todo.findByIdAndUpdate(
         {
             _id: req.body.id
         },
         {
             completed: true
+        },
+        {
+            new: true
         }
     )
 
@@ -63,7 +67,4 @@ app.put('/completed', async function(req, res) {
     })
 }) 
 
-const PORT = process.env.PORT || 3000
-app.listen(PORT, () => {
-    console.log('Server is running on port ${PORT}')
-})
+app.listen(3000)
